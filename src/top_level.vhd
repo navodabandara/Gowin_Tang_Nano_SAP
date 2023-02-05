@@ -16,7 +16,7 @@ END top_level;
 
 ARCHITECTURE behavioral OF top_level IS
     --stuff related to clock driving
-    CONSTANT c_clock_multiplier : NATURAL := 10000000; --clock frequency --27000000 max
+    CONSTANT c_clock_multiplier : NATURAL := 1000000; --clock frequency --27000000 max
     SIGNAL r_clock_counter : NATURAL RANGE 0 TO c_clock_multiplier; --max range is clock cycles per second
     SIGNAL w_sysclk : STD_LOGIC := '0'; --system clock that the SAP 1 operates at
     SIGNAL w_led2 : STD_LOGIC := '0';
@@ -49,6 +49,7 @@ ARCHITECTURE behavioral OF top_level IS
     SIGNAL w_read_INS, w_write_INS : STD_LOGIC := '0';
     SIGNAL w_INS_out_L : STD_LOGIC_VECTOR(3 DOWNTO 0);
     SIGNAL w_INS_decoder_in : STD_LOGIC_VECTOR(3 DOWNTO 0);
+    SIGNAL w_INS_output_direct_H : STD_LOGIC_VECTOR(3 DOWNTO 0); --UNUSED
 
     --###############Output Register################
     SIGNAL w_read_ROUT, w_write_ROUT : STD_LOGIC := '0'; --write is unused
@@ -63,6 +64,7 @@ ARCHITECTURE behavioral OF top_level IS
     --###############Microinstruction counter################
     SIGNAL control_bus : STD_LOGIC_VECTOR(15 DOWNTO 0) := "LLLLLLLLLLLLLLLL";
     SIGNAL microinstruction_counter : STD_LOGIC_VECTOR(2 DOWNTO 0); --3 bit counter
+    SIGNAL w_unused_control : STD_LOGIC;
 
 BEGIN
     --*********************************SYSCLK DIVIDER***************************************
@@ -72,7 +74,7 @@ BEGIN
         IF rising_edge (i_clock) THEN --on the rising edge of clock
             IF r_clock_counter = c_clock_multiplier - 1 THEN --if the clock is about to overflow
                 r_clock_counter <= 0; --set the clock counter back to 0
-                w_sysclk <= NOT w_sysclk; --toggle sysclk every c_clock_multiplier clock cycles
+                w_sysclk <=(NOT w_sysclk) when (w_halt='0') else '0'; --toggle sysclk every c_clock_multiplier clock cycles
             ELSE
                 r_clock_counter <= r_clock_counter + 1; --else increment the clock counter by 1
             END IF;
@@ -83,7 +85,7 @@ BEGIN
         END IF;
     END PROCESS sysclk_div;
 
-    o_sysclk <= NOT w_sysclk; -- show the sysclk on PIN10_IOL15A_LED1
+    o_sysclk <= w_sysclk; -- show the sysclk on PIN10_IOL15A_LED1
     --***********************************SYSCLK******************************************
 
     --sysclk process which is the main clock for the SAP 1 architecture
@@ -91,7 +93,6 @@ BEGIN
     BEGIN
         IF falling_edge (w_sysclk) THEN --on the falling edge of clock
             --do stuff
-
             microinstruction_counter <= microinstruction_counter + 1;
         END IF;
     END PROCESS sysclk;
@@ -143,6 +144,7 @@ BEGIN
         i_read => w_read_INS,
         i_write => w_write_INS,
         o_output(3 DOWNTO 0) => r_data_bus(3 DOWNTO 0),
+        o_output(7 DOWNTO 4) => w_INS_output_direct_H, --UNSUSED
         o_output_direct(3 DOWNTO 0) => w_INS_out_L, --UNUSED
         o_output_direct(7 DOWNTO 4) => w_INS_decoder_in
         );
@@ -190,7 +192,8 @@ BEGIN
         dout(3) => w_enable_pc,
         dout(2) => w_dump_pc,
         dout(1) => w_load_pc,
-        
+        dout(0) => w_unused_control,        
+
         clk => NOT w_sysclk,
         oce => '0',
         ce => '1',

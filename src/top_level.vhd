@@ -16,7 +16,7 @@ end top_level;
 
 architecture behavioral of top_level is
     --stuff related to clock driving
-    constant c_clock_multiplier :  natural := 2700000; --clock frequency --27000000 max
+    constant c_clock_multiplier :  natural := 1000000; --clock frequency --27000000 max
     signal r_clock_counter : natural range 0 to c_clock_multiplier; --max range is clock cycles per second
     signal w_sysclk : std_logic := '0'; --system clock that the SAP 1 operates at
     signal w_led2 : std_logic := '0';
@@ -92,20 +92,17 @@ begin
   if r_halt = '0' then
                         case r_debug is
                             when 0 =>  -- pc x
-                                w_dump_pc <= '1';
                                 w_read_MA <= '1';
                             when 1 => --pc x
                                 w_read_MA <= '0';
                             when 2 => -- pc x
                                 w_dump_pc <= '0';
-                            when 3 => --ram x
                                 w_ram_dump <= '1';
-                            when 4 => --pc x
-                                w_ram_dump <= '0';
                                 w_enable_pc <= '1';
+                            when 3 => --pc x
+                                w_ram_dump <= '0';
                                 w_dump_pc <= '1';
-                            when 5 =>
-                                w_enable_pc <= '0';
+                                w_enable_pc <= '0';                               
                             when others => --THIS IS VERY IMPORTANT. Do not forget.
                         end case;
                         r_debug <= r_debug + 1;

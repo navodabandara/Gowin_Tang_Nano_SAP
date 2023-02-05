@@ -16,17 +16,21 @@ end top_level;
 
 architecture behavioral of top_level is
     --stuff related to clock driving
-    constant c_clock_multiplier :  natural := 2700000; --clock frequency
+    constant c_clock_multiplier :  natural := 27000000; --clock frequency --27000000 max
     signal r_clock_counter : natural range 0 to c_clock_multiplier; --max range is clock cycles per second
-    signal w_sysclk, w_led2 : std_logic := '0'; --system clock that the SAP 1 operates at
+    signal w_sysclk : std_logic := '0'; --system clock that the SAP 1 operates at
+    signal w_led2 : std_logic := '0';
 
     signal r_data_bus : std_logic_vector(7 downto 0) := "LLLLLLLL"; --data bus --Note: should be pulled down to gnd hence weak low
+
+    signal r_debug : natural range 0 to 7 := 0; --for testing
+    signal r_halt : std_logic := '0';
 
 --***********************************CONTROL BUS****************************************
 --declaring all the control bus lines and setting their default states
 --############PC##############
     signal w_reset_pc, w_load_pc, w_enable_pc: std_logic  := '0';
-    signal w_dump_pc: std_logic := '1';
+    signal w_dump_pc: std_logic := '0';
 
 --############General Register A##############
     signal w_write_A, w_read_A: std_logic  := '0';
@@ -36,7 +40,7 @@ architecture behavioral of top_level is
     signal w_write_B, w_read_B: std_logic  := '0';
     signal w_output_direct_B: std_logic_vector(7 downto 0);
 
---############General Register A##############
+--############Memory Address Register##############
     signal w_read_MA, w_write_MA: std_logic  := '0'; --write     is unused
     signal w_MA_out_tristate: std_logic_vector(7 downto 0);
     signal w_MA_out: std_logic_vector(3 downto 0);
@@ -52,6 +56,8 @@ architecture behavioral of top_level is
     signal w_read_ROUT, w_write_ROUT: std_logic  := '0'; --write is unused
     signal w_ROUT,w_ROUT_tristate: std_logic_vector(7 downto 0); --w_ROUT_tristate is unused
 
+--###############RAM################
+    signal w_ram_load, w_ram_dump: std_logic  := '0';
 
 begin
 --*********************************SYSCLK DIVIDER***************************************
@@ -74,13 +80,43 @@ begin
 
     o_sysclk <= not w_sysclk; -- show the sysclk on PIN10_IOL15A_LED1
 
+
 --***********************************SYSCLK******************************************
 
 --sysclk process which is the main clock for the SAP 1 architecture
    sysclk : process (w_sysclk) is
     begin
             if rising_edge (w_sysclk) then --on the rising edge of clock
-                w_led2 <= not w_led2;
+
+--do stuff
+  if r_halt = '0' then
+
+                        case r_debug is
+                            when 0 =>
+                                w_dump_pc <= '1';
+                            when 1 =>
+                                w_read_MA <= '1';
+                            when 2 =>
+                                w_read_MA <= '0';
+                            when 3 =>
+                                w_dump_pc <= '0';
+                            when 4 =>
+                                w_ram_dump <= '1';
+                            when 5 =>
+                                w_ram_dump <= '0';
+                            when 6 =>
+                                w_enable_pc <= '1';
+                            when 7 =>
+                                w_enable_pc <= '0';
+
+
+
+                        end case;
+                        r_debug <= r_debug + 1;
+  end if;
+
+
+
             end if;
     end process sysclk;
 
@@ -146,6 +182,16 @@ begin
         o_output_direct => w_ROUT
     );
 
+    SP_RAM : entity work.single_port_RAM  port map (
+        o_data_out => r_data_bus,
+        i_data_in => r_data_bus,
+        i_clk => w_sysclk,
+        i_address => w_MA_out,
+        i_load => w_ram_load,
+        i_dump => w_ram_dump
+    );
+
+  w_led2 <= '0';
   o_data_bus <= r_data_bus; -- output the data bus
 
 end behavioral;

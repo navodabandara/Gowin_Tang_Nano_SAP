@@ -106,7 +106,11 @@ begin
                             when 4 =>
                                 w_enable_pc <= '1'; --CE
                             when 5 => --0 , 0
-                                w_enable_pc <= '0';                               
+                                w_enable_pc <= '0';     
+                            when 6 => --0 , 0
+                                w_write_INS <= '1';
+                            when 7 =>
+                                w_write_INS <= '0';                           
                             when others => --THIS IS VERY IMPORTANT. Do not forget.
                         end case;
                         r_debug <= r_debug + 1;
@@ -165,7 +169,7 @@ begin
         i_input => r_data_bus,
         i_read => w_read_INS,
         i_write => w_write_INS,
-        o_output => r_data_bus,
+        o_output(3 downto 0) => r_data_bus(3 downto 0),
         o_output_direct(3 downto 0) => w_INS_out_L,
         o_output_direct(7 downto 4) => w_INS_decoder_in
     );

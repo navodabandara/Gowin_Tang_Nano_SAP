@@ -24,7 +24,7 @@ architecture behavioral of top_level is
     signal r_data_bus : std_logic_vector(7 downto 0) := "LLLLLLLL"; --data bus --Note: should be pulled down to gnd hence weak low
 
     signal r_debug : natural range 0 to 31 := 0; --for testing
-    signal r_halt : std_logic := '0';
+    signal w_halt : std_logic := '0';
 
 --***********************************CONTROL BUS****************************************
 --declaring all the control bus lines and setting their default states
@@ -95,7 +95,6 @@ begin
     begin
             if falling_edge (w_sysclk) then --on the falling edge of clock
                 microinstruction_counter <= microinstruction_counter + 1;
-
             end if;
     end process sysclk;
 
@@ -190,10 +189,24 @@ begin
         din => "XXXXXXXXXXXXXXXX"
     );
 
+--****************************ATTACHING CONTROL BUS TO MICROCODE_LUT*************************
+    control_bus(15) <= w_halt;
+    control_bus(14) <= w_read_MA;
+    control_bus(13) <= w_ram_load;
+    control_bus(12) <= w_ram_dump;
+    control_bus(11) <= w_write_INS;
+    control_bus(10) <= w_read_INS;
+    control_bus(9) <= w_read_A;
+    control_bus(8) <= w_write_A;
+    control_bus(7) <= w_add_reg_A_B;
+    control_bus(6) <= w_sub_reg_A_B;
+    control_bus(5) <= w_read_B;
+    control_bus(4) <= w_read_ROUT;
+    control_bus(3) <= w_enable_pc;
+    control_bus(2) <= w_dump_pc;
+    control_bus(1) <= w_load_pc;
 
   w_led2 <= '0';
-  --o_data_bus <= w_ROUT; -- output the data bus 
-    o_data_bus(2 downto 0) <= microinstruction_counter; -- output the data bus
-    o_data_bus(7 downto 3) <= "00000";
+  o_data_bus <= w_ROUT; -- output the data bus 
 
 end behavioral;

@@ -1,4 +1,5 @@
 --TODO find a way to remove unused ports
+--TODO implement reset (perhaps add a rising edge clock independant reset to submodules)
 
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
@@ -60,6 +61,7 @@ ARCHITECTURE behavioral OF top_level IS
 
     --###########ADD SUB A and B registers#############
     SIGNAL w_add_reg_A_B, w_sub_reg_A_B : STD_LOGIC := '0';
+    SIGNAL w_carry_A_B : STD_LOGIC := '0';
 
     --###############Microinstruction counter################
     SIGNAL control_bus : STD_LOGIC_VECTOR(15 DOWNTO 0) := "LLLLLLLLLLLLLLLL";
@@ -172,7 +174,9 @@ BEGIN
         i_reg_b => w_output_direct_B,
         i_add => w_add_reg_A_B,
         i_sub => w_sub_reg_A_B,
-        o_result => r_data_bus
+        o_result => r_data_bus,
+        o_carry => w_carry_A_B
+        
         );
 
     MICROCODE_LUT : ENTITY work.microcode_lut PORT MAP (
@@ -204,7 +208,7 @@ BEGIN
         din => "XXXXXXXXXXXXXXXX"
         );
 
-    w_led2 <= '0';
+    w_led2 <= w_carry_A_B;
     o_data_bus <= w_ROUT; -- output the data bus 
 
 END behavioral;

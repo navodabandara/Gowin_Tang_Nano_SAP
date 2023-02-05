@@ -18,7 +18,7 @@ architecture single_port_RAM_rtl of single_port_RAM is
 begin
     RAM_A : entity work.Gowin_SP port map (
         dout => r_data_out_direct,
-        clk => i_clk,
+        clk => not i_clk,
         oce => '0',
         ce => '1',
         reset => '0',

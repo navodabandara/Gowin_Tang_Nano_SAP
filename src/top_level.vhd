@@ -23,7 +23,7 @@ architecture behavioral of top_level is
 
     signal r_data_bus : std_logic_vector(7 downto 0) := "LLLLLLLL"; --data bus --Note: should be pulled down to gnd hence weak low
 
-    signal r_debug : natural range 0 to 7 := 0; --for testing
+    signal r_debug : natural range 0 to 15 := 0; --for testing
     signal r_halt : std_logic := '0';
 
 --***********************************CONTROL BUS****************************************
@@ -86,7 +86,7 @@ begin
 --sysclk process which is the main clock for the SAP 1 architecture
    sysclk : process (w_sysclk) is
     begin
-            if rising_edge (w_sysclk) then --on the rising edge of clock
+            if falling_edge (w_sysclk) then --on the falling edge of clock
 
 --do stuff
   if r_halt = '0' then
@@ -97,20 +97,25 @@ begin
                             when 1 => -- 30 , 47
                                 w_dump_pc <= '0';
                                 w_read_MA <= '0';
-                            when 2 =>
                                 w_ram_dump <= '1'; --RO
-                                w_read_INS <= '1'; --II
-                            when 3 => -- 0 , 0
+                                w_read_INS <= '1'; --II 
+                            when 2 =>
                                 w_ram_dump <= '0';
                                 w_read_INS <= '0';
-                            when 4 =>
                                 w_enable_pc <= '1'; --CE
-                            when 5 => --0 , 0
-                                w_enable_pc <= '0';     
-                            when 6 => --0 , 0
-                                w_write_INS <= '1';
-                            when 7 =>
-                                w_write_INS <= '0';                           
+                            when 3 => --0 , 0
+                                w_enable_pc <= '0'; 
+                                w_write_INS <= '1'; --IO
+                                w_read_MA <= '1'; --MI
+                            when 4 =>
+                                w_write_INS <= '0';
+                                w_read_MA <= '0';
+                                w_ram_dump <= '1'; --RO
+                                w_read_A   <= '1'; --AI
+                            when 5 =>
+                                w_ram_dump <= '0';
+                                w_read_A   <= '0';
+                                
                             when others => --THIS IS VERY IMPORTANT. Do not forget.
                         end case;
                         r_debug <= r_debug + 1;

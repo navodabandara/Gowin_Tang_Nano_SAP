@@ -1,5 +1,7 @@
 #ignore impl folder
 impl/
+.vscode/
+.ipynb_checkpoints/
 
 #ignore govin user file
 .user

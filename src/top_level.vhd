@@ -16,7 +16,7 @@ end top_level;
 
 architecture behavioral of top_level is
     --stuff related to clock driving
-    constant c_clock_multiplier :  natural := 20000000; --clock frequency --27000000 max
+    constant c_clock_multiplier :  natural := 10000000; --clock frequency --27000000 max
     signal r_clock_counter : natural range 0 to c_clock_multiplier; --max range is clock cycles per second
     signal w_sysclk : std_logic := '0'; --system clock that the SAP 1 operates at
     signal w_led2 : std_logic := '0';
@@ -59,8 +59,12 @@ architecture behavioral of top_level is
 --###############RAM################
     signal w_ram_load, w_ram_dump: std_logic  := '0';
 
---###############RAM################
+--###########ADD SUB A and B registers#############
     signal w_add_reg_A_B, w_sub_reg_A_B: std_logic  := '0';
+
+--###############Microinstruction counter################
+    signal control_bus : std_logic_vector(15 downto 0):= "LLLLLLLLLLLLLLLL";
+    signal microinstruction_counter: std_logic_vector(2 downto 0); --3 bit counter
 
 begin
 --*********************************SYSCLK DIVIDER***************************************
@@ -90,100 +94,7 @@ begin
    sysclk : process (w_sysclk) is
     begin
             if falling_edge (w_sysclk) then --on the falling edge of clock
-
---do stuff
-  if r_halt = '0' then
-                        case r_debug is
---LDA INSTRUCTION
-                            when 0 =>  -- 0 , 1
-                                w_dump_pc <= '1'; --CO
-                                w_read_MA <= '1'; --MI
-                            when 1 => -- 30 , 47
-                                w_dump_pc <= '0';
-                                w_read_MA <= '0';
-                                w_ram_dump <= '1'; --RO
-                                w_read_INS <= '1'; --II 
-                            when 2 =>
-                                w_ram_dump <= '0';
-                                w_read_INS <= '0';
-                                w_enable_pc <= '1'; --CE
-                            when 3 => --0 , 0
-                                w_enable_pc <= '0'; 
-                                w_write_INS <= '1'; --IO
-                                w_read_MA <= '1'; --MI
-                            when 4 =>
-                                w_write_INS <= '0';
-                                w_read_MA <= '0';
-                                w_ram_dump <= '1'; --RO
-                                w_read_A   <= '1'; --AI
-                            when 5 =>
-                                w_ram_dump <= '0';
-                                w_read_A   <= '0';
-                                
-
-                            when 6 =>  -- 0 , 1
-                                w_dump_pc <= '1'; --CO
-                                w_read_MA <= '1'; --MI
-                            when 7 => -- 30 , 47
-                                w_dump_pc <= '0';
-                                w_read_MA <= '0';
-                                w_ram_dump <= '1'; --RO
-                                w_read_INS <= '1'; --II 
-                            when 8 =>
-                                w_ram_dump <= '0';
-                                w_read_INS <= '0';
-                                w_enable_pc <= '1'; --CE
-
-                            when 9 => --0 , 0
-                                w_enable_pc <= '0'; 
-                                w_write_INS <= '1'; --IO
-                                w_read_MA <= '1'; --MI
-                            when 10 =>
-                                w_write_INS <= '0';
-                                w_read_MA <= '0';
-                                w_ram_dump <= '1'; --RO
-                                w_read_B   <= '1'; --BI
-                            when 11 =>
-                                w_ram_dump <= '0';
-                                w_read_B   <= '0';
-                                w_add_reg_A_B <= '1'; --EO (sum out)
-                                w_read_A   <= '1'; --AI
-                            when 12 =>
-                                w_read_A   <= '0';
-                                w_add_reg_A_B <= '0';
-
-
-
-
-                            when 13 =>  -- 0 , 1
-                                w_dump_pc <= '1'; --CO
-                                w_read_MA <= '1'; --MI
-                            when 14 => -- 30 , 47
-                                w_dump_pc <= '0';
-                                w_read_MA <= '0';
-                                w_ram_dump <= '1'; --RO
-                                w_read_INS <= '1'; --II 
-                            when 15 =>
-                                w_ram_dump <= '0';
-                                w_read_INS <= '0';
-                                w_enable_pc <= '1'; --CE
-
-                            when 16 => --0 , 0
-                                w_enable_pc <= '0'; 
-                                w_write_A <= '1'; --AO
-                                w_read_ROUT <= '1'; --RO
-                            when 17 =>
-                               w_write_A <= '0';
-                               w_read_ROUT <= '0';
-
-
-
-                            when others => --THIS IS VERY IMPORTANT. Do not forget.
-                        end case;
-                        r_debug <= r_debug + 1;
-  end if;
-
-
+                microinstruction_counter <= microinstruction_counter + 1;
 
             end if;
     end process sysclk;
@@ -237,7 +148,7 @@ begin
         i_read => w_read_INS,
         i_write => w_write_INS,
         o_output(3 downto 0) => r_data_bus(3 downto 0),
-        o_output_direct(3 downto 0) => w_INS_out_L,
+        o_output_direct(3 downto 0) => w_INS_out_L, --UNUSED
         o_output_direct(7 downto 4) => w_INS_decoder_in
     );
 
@@ -267,8 +178,22 @@ begin
         o_result => r_data_bus
     );
 
+    MICROCODE_LUT : entity work.microcode_lut  port map (
+        dout => control_bus,
+        clk => not w_sysclk,
+        oce => '0',
+        ce => '1',
+        reset => '0',
+        wre => '0',
+        ad(6 downto 3) => w_INS_decoder_in,
+        ad(2 downto 0) => microinstruction_counter,
+        din => "XXXXXXXXXXXXXXXX"
+    );
+
 
   w_led2 <= '0';
-  o_data_bus <= w_ROUT; -- output the data bus
+  --o_data_bus <= w_ROUT; -- output the data bus 
+    o_data_bus(2 downto 0) <= microinstruction_counter; -- output the data bus
+    o_data_bus(7 downto 3) <= "00000";
 
 end behavioral;

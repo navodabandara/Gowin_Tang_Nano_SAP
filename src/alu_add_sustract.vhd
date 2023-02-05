@@ -22,11 +22,11 @@ begin
 
     sum : process (i_reg_a, i_reg_b, i_add, i_sub, o_carry, o_result, temp)
     begin
-        if i_add = '1' then
+        if (i_add = '1' and i_sub = '0')  then
             temp <=  '0' & unsigned(i_reg_a) + unsigned(i_reg_b);
             o_result <= std_logic_vector(temp(7 downto 0));
             o_carry <= temp(8);
-         elsif i_sub = '1' then
+        elsif (i_add = '1' and i_sub = '1') then
              temp <=  '0' & unsigned(i_reg_a) - unsigned(i_reg_b);
              o_result <= std_logic_vector(temp(7 downto 0));
              o_carry <= temp(8);

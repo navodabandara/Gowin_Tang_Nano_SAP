@@ -5,6 +5,7 @@
     <Version>5</Version>
     <Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>
     <FileList>
+        <File path="src/alu_add_sustract.vhd" type="file.vhdl" enable="1"/>
         <File path="src/general_register.vhd" type="file.vhdl" enable="1"/>
         <File path="src/gowin_sp.vhd" type="file.vhdl" enable="1"/>
         <File path="src/program_counter.vhd" type="file.vhdl" enable="1"/>

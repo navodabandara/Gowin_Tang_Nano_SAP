@@ -16,14 +16,14 @@ end top_level;
 
 architecture behavioral of top_level is
     --stuff related to clock driving
-    constant c_clock_multiplier :  natural := 27000000; --clock frequency --27000000 max
+    constant c_clock_multiplier :  natural := 20000000; --clock frequency --27000000 max
     signal r_clock_counter : natural range 0 to c_clock_multiplier; --max range is clock cycles per second
     signal w_sysclk : std_logic := '0'; --system clock that the SAP 1 operates at
     signal w_led2 : std_logic := '0';
 
     signal r_data_bus : std_logic_vector(7 downto 0) := "LLLLLLLL"; --data bus --Note: should be pulled down to gnd hence weak low
 
-    signal r_debug : natural range 0 to 15 := 0; --for testing
+    signal r_debug : natural range 0 to 31 := 0; --for testing
     signal r_halt : std_logic := '0';
 
 --***********************************CONTROL BUS****************************************
@@ -59,6 +59,9 @@ architecture behavioral of top_level is
 --###############RAM################
     signal w_ram_load, w_ram_dump: std_logic  := '0';
 
+--###############RAM################
+    signal w_add_reg_A_B, w_sub_reg_A_B: std_logic  := '0';
+
 begin
 --*********************************SYSCLK DIVIDER***************************************
 
@@ -91,6 +94,7 @@ begin
 --do stuff
   if r_halt = '0' then
                         case r_debug is
+--LDA INSTRUCTION
                             when 0 =>  -- 0 , 1
                                 w_dump_pc <= '1'; --CO
                                 w_read_MA <= '1'; --MI
@@ -116,6 +120,64 @@ begin
                                 w_ram_dump <= '0';
                                 w_read_A   <= '0';
                                 
+
+                            when 6 =>  -- 0 , 1
+                                w_dump_pc <= '1'; --CO
+                                w_read_MA <= '1'; --MI
+                            when 7 => -- 30 , 47
+                                w_dump_pc <= '0';
+                                w_read_MA <= '0';
+                                w_ram_dump <= '1'; --RO
+                                w_read_INS <= '1'; --II 
+                            when 8 =>
+                                w_ram_dump <= '0';
+                                w_read_INS <= '0';
+                                w_enable_pc <= '1'; --CE
+
+                            when 9 => --0 , 0
+                                w_enable_pc <= '0'; 
+                                w_write_INS <= '1'; --IO
+                                w_read_MA <= '1'; --MI
+                            when 10 =>
+                                w_write_INS <= '0';
+                                w_read_MA <= '0';
+                                w_ram_dump <= '1'; --RO
+                                w_read_B   <= '1'; --BI
+                            when 11 =>
+                                w_ram_dump <= '0';
+                                w_read_B   <= '0';
+                                w_add_reg_A_B <= '1'; --EO (sum out)
+                                w_read_A   <= '1'; --AI
+                            when 12 =>
+                                w_read_A   <= '0';
+                                w_add_reg_A_B <= '0';
+
+
+
+
+                            when 13 =>  -- 0 , 1
+                                w_dump_pc <= '1'; --CO
+                                w_read_MA <= '1'; --MI
+                            when 14 => -- 30 , 47
+                                w_dump_pc <= '0';
+                                w_read_MA <= '0';
+                                w_ram_dump <= '1'; --RO
+                                w_read_INS <= '1'; --II 
+                            when 15 =>
+                                w_ram_dump <= '0';
+                                w_read_INS <= '0';
+                                w_enable_pc <= '1'; --CE
+
+                            when 16 => --0 , 0
+                                w_enable_pc <= '0'; 
+                                w_write_A <= '1'; --AO
+                                w_read_ROUT <= '1'; --RO
+                            when 17 =>
+                               w_write_A <= '0';
+                               w_read_ROUT <= '0';
+
+
+
                             when others => --THIS IS VERY IMPORTANT. Do not forget.
                         end case;
                         r_debug <= r_debug + 1;
@@ -197,7 +259,16 @@ begin
         i_dump => w_ram_dump
     );
 
+    ADD_SUB_REG_A_B : entity work.adder_substractor_8bit  port map (
+        i_reg_a => w_output_direct_A,
+        i_reg_b => w_output_direct_B,
+        i_add => w_add_reg_A_B,
+        i_sub => w_sub_reg_A_B,
+        o_result => r_data_bus
+    );
+
+
   w_led2 <= '0';
-  o_data_bus <= r_data_bus; -- output the data bus
+  o_data_bus <= w_ROUT; -- output the data bus
 
 end behavioral;

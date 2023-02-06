@@ -67,10 +67,10 @@ ARCHITECTURE behavioral OF top_level IS
     --###############Microinstruction counter################
     SIGNAL control_bus : STD_LOGIC_VECTOR(15 DOWNTO 0) := "LLLLLLLLLLLLLLLL";
     SIGNAL microinstruction_counter : STD_LOGIC_VECTOR(2 DOWNTO 0); --3 bit counter
-    SIGNAL w_unused_control : STD_LOGIC;
 
     --############CPU FLAGS##############
-    SIGNAL w_flag_carry : STD_LOGIC := '0';
+    SIGNAL w_read_flags : STD_LOGIC := '0';
+    SIGNAL r_carry_flag : STD_LOGIC;
 
 BEGIN
     --*********************************SYSCLK DIVIDER***************************************
@@ -100,12 +100,6 @@ BEGIN
         IF falling_edge (w_sysclk) THEN --on the falling edge of clock
             --do stuff
             microinstruction_counter <= microinstruction_counter + 1;
-
-            if ( (w_out_reg_A_B='1' or w_sub_reg_A_B='1') and w_carry_A_B = '1') then
-                w_flag_carry <= '1';
-            elsif ( (w_out_reg_A_B='1' or w_sub_reg_A_B='1') and w_carry_A_B = '0') then
-                w_flag_carry <= '0';
-            end if;
 
         END IF;
     END PROCESS sysclk;
@@ -207,7 +201,7 @@ BEGIN
         dout(3) => w_enable_pc,
         dout(2) => w_dump_pc,
         dout(1) => w_load_pc,
-        dout(0) => w_unused_control,        
+        dout(0) => w_read_flags,        
 
         clk => NOT w_sysclk,
         oce => '0',
@@ -219,8 +213,19 @@ BEGIN
         din => "XXXXXXXXXXXXXXXX"
         );
 
+    REG_FLAGS : ENTITY work.register_8bit PORT MAP (
+        i_clk => w_sysclk,
+        i_input(7 downto 2) => "XXXXXX",
+        i_input(1) => 'X',
+        i_input(0) => w_carry_A_B,
+        i_read => w_read_flags,
+        i_write => 'X', --UNUSED
+        --o_output => "XXXXXXXX", --UNUSED
+        o_output_direct(0) => r_carry_flag
+        );
 
-    w_led2 <= w_flag_carry;
+
+    w_led2 <= r_carry_flag;
     o_data_bus <= w_ROUT; -- output the data bus 
 
 END behavioral;

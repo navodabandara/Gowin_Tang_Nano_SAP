@@ -8,7 +8,7 @@
         <File path="src/alu_add_sustract.vhd" type="file.vhdl" enable="1"/>
         <File path="src/general_register.vhd" type="file.vhdl" enable="1"/>
         <File path="src/gowin_sp.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/gowin_sp_microcode/microcode_lut.vhd" type="file.vhdl" enable="1"/>
+        <File path="src/microcode_lut.vhd" type="file.vhdl" enable="1"/>
         <File path="src/program_counter.vhd" type="file.vhdl" enable="1"/>
         <File path="src/single_port_ram.vhd" type="file.vhdl" enable="1"/>
         <File path="src/top_level.vhd" type="file.vhdl" enable="1"/>

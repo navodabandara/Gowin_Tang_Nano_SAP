@@ -37,7 +37,7 @@ ARCHITECTURE behavioral OF top_level IS
     SIGNAL w_write_A, w_read_A : STD_LOGIC := '0';
     SIGNAL w_output_direct_A : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
-    --############General Register A##############
+    --############General Register B##############
     SIGNAL w_write_B, w_read_B : STD_LOGIC := '0';
     SIGNAL w_output_direct_B : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
@@ -46,6 +46,7 @@ ARCHITECTURE behavioral OF top_level IS
     SIGNAL w_MA_out_tristate : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL w_MA_out : STD_LOGIC_VECTOR(3 DOWNTO 0);
     SIGNAL w_MA_out_H : STD_LOGIC_VECTOR(3 DOWNTO 0);
+
     --############Instruction Register##############
     SIGNAL w_read_INS, w_write_INS : STD_LOGIC := '0';
     SIGNAL w_INS_out_L : STD_LOGIC_VECTOR(3 DOWNTO 0);
@@ -60,13 +61,16 @@ ARCHITECTURE behavioral OF top_level IS
     SIGNAL w_ram_load, w_ram_dump : STD_LOGIC := '0';
 
     --###########ADD SUB A and B registers#############
-    SIGNAL w_add_reg_A_B, w_sub_reg_A_B : STD_LOGIC := '0';
+    SIGNAL w_out_reg_A_B, w_sub_reg_A_B : STD_LOGIC := '0';
     SIGNAL w_carry_A_B : STD_LOGIC := '0';
 
     --###############Microinstruction counter################
     SIGNAL control_bus : STD_LOGIC_VECTOR(15 DOWNTO 0) := "LLLLLLLLLLLLLLLL";
     SIGNAL microinstruction_counter : STD_LOGIC_VECTOR(2 DOWNTO 0); --3 bit counter
     SIGNAL w_unused_control : STD_LOGIC;
+
+    --############CPU FLAGS##############
+    SIGNAL w_flag_carry : STD_LOGIC := '0';
 
 BEGIN
     --*********************************SYSCLK DIVIDER***************************************
@@ -96,6 +100,13 @@ BEGIN
         IF falling_edge (w_sysclk) THEN --on the falling edge of clock
             --do stuff
             microinstruction_counter <= microinstruction_counter + 1;
+
+            if ( (w_out_reg_A_B='1' or w_sub_reg_A_B='1') and w_carry_A_B = '1') then
+                w_flag_carry <= '1';
+            elsif ( (w_out_reg_A_B='1' or w_sub_reg_A_B='1') and w_carry_A_B = '0') then
+                w_flag_carry <= '0';
+            end if;
+
         END IF;
     END PROCESS sysclk;
 
@@ -172,7 +183,7 @@ BEGIN
     ADD_SUB_REG_A_B : ENTITY work.adder_substractor_8bit PORT MAP (
         i_reg_a => w_output_direct_A,
         i_reg_b => w_output_direct_B,
-        i_add => w_add_reg_A_B,
+        i_out => w_out_reg_A_B,
         i_sub => w_sub_reg_A_B,
         o_result => r_data_bus,
         o_carry => w_carry_A_B
@@ -189,7 +200,7 @@ BEGIN
         dout(10) => w_read_INS,
         dout(9) => w_read_A,
         dout(8) => w_write_A,
-        dout(7) => w_add_reg_A_B,
+        dout(7) => w_out_reg_A_B,
         dout(6) => w_sub_reg_A_B,
         dout(5) => w_read_B,
         dout(4) => w_read_ROUT,
@@ -208,7 +219,8 @@ BEGIN
         din => "XXXXXXXXXXXXXXXX"
         );
 
-    w_led2 <= w_carry_A_B;
+
+    w_led2 <= w_flag_carry;
     o_data_bus <= w_ROUT; -- output the data bus 
 
 END behavioral;

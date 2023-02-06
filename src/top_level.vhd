@@ -1,6 +1,6 @@
 --TODO find a way to remove unused ports
 --TODO implement reset (perhaps add a rising edge clock independant reset to submodules)
-
+--TODO rename outputs and inputs called TOBUS, FROMBUS to clearly distinguish between direct outputs/inputs
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
@@ -10,7 +10,7 @@ USE ieee.std_logic_unsigned.ALL;
 ENTITY top_level IS
     PORT (
         i_clock, i_reset : IN STD_LOGIC;
-        o_sysclk, o_led2 : OUT STD_LOGIC;
+        o_sysclk, o_led2, o_led3 : OUT STD_LOGIC;
         o_data_bus : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
 END top_level;
@@ -20,7 +20,6 @@ ARCHITECTURE behavioral OF top_level IS
     CONSTANT c_clock_multiplier : NATURAL := 1000000; --clock frequency --27000000 max
     SIGNAL r_clock_counter : NATURAL RANGE 0 TO c_clock_multiplier; --max range is clock cycles per second
     SIGNAL w_sysclk : STD_LOGIC := '0'; --system clock that the SAP 1 operates at
-    SIGNAL w_led2 : STD_LOGIC := '0';
 
     SIGNAL r_data_bus : STD_LOGIC_VECTOR(7 DOWNTO 0) := "LLLLLLLL"; --data bus --Note: should be pulled down to gnd hence weak low
 
@@ -62,7 +61,8 @@ ARCHITECTURE behavioral OF top_level IS
 
     --###########ADD SUB A and B registers#############
     SIGNAL w_out_reg_A_B, w_sub_reg_A_B : STD_LOGIC := '0';
-    SIGNAL w_carry_A_B : STD_LOGIC := '0';
+    SIGNAL w_carry_A_B,w_zero_A_B : STD_LOGIC := '0';
+    SIGNAL w_output_direct_A_B : STD_LOGIC_VECTOR(7 downto 0);
 
     --###############Microinstruction counter################
     SIGNAL control_bus : STD_LOGIC_VECTOR(15 DOWNTO 0) := "LLLLLLLLLLLLLLLL";
@@ -70,7 +70,7 @@ ARCHITECTURE behavioral OF top_level IS
 
     --############CPU FLAGS##############
     SIGNAL w_read_flags : STD_LOGIC := '0';
-    SIGNAL r_carry_flag : STD_LOGIC;
+    SIGNAL r_carry_flag, r_zero_flag : STD_LOGIC;
 
 BEGIN
     --*********************************SYSCLK DIVIDER***************************************
@@ -104,7 +104,6 @@ BEGIN
         END IF;
     END PROCESS sysclk;
 
-    o_led2 <= NOT w_led2; -- show the sysclk on PIN10_IOL15A_LED1
     --******************************ENTITY DECLARATIONS***********************************
     --~~~~~~~~~~~~~~~~~~~~PC~~~~~~~~~~~~~~~~~~~~
     PC : ENTITY work.program_counter PORT MAP(
@@ -180,7 +179,8 @@ BEGIN
         i_out => w_out_reg_A_B,
         i_sub => w_sub_reg_A_B,
         o_result => r_data_bus,
-        o_carry => w_carry_A_B
+        o_carry => w_carry_A_B,
+        o_zero_flag => w_zero_A_B
         
         );
 
@@ -216,16 +216,17 @@ BEGIN
     REG_FLAGS : ENTITY work.register_8bit PORT MAP (
         i_clk => w_sysclk,
         i_input(7 downto 2) => "XXXXXX",
-        i_input(1) => 'X',
+        i_input(1) => w_zero_A_B,
         i_input(0) => w_carry_A_B,
         i_read => w_read_flags,
         i_write => 'X', --UNUSED
         --o_output => "XXXXXXXX", --UNUSED
+        o_output_direct(1) => r_zero_flag,
         o_output_direct(0) => r_carry_flag
         );
-
-
-    w_led2 <= r_carry_flag;
+    
+    o_led3 <= not r_zero_flag;
+    o_led2 <= not r_carry_flag;
     o_data_bus <= w_ROUT; -- output the data bus 
 
 END behavioral;

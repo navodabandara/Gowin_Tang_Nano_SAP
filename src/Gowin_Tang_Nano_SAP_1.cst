@@ -4,28 +4,30 @@
 //GOWIN Version: 1.9.8.03 Education
 //Part Number: GW1NR-LV9QN88PC6/I5
 //Device: GW1NR-9C
-//Created Time: Sat 02 04 22:00:03 2023
+//Created Time: Mon 02 06 23:34:20 2023
 
+IO_LOC "o_data_bus[7]" 28;
+IO_PORT "o_data_bus[7]" PULL_MODE=UP DRIVE=8;
+IO_LOC "o_data_bus[6]" 27;
+IO_PORT "o_data_bus[6]" PULL_MODE=UP DRIVE=8;
+IO_LOC "o_data_bus[5]" 26;
+IO_PORT "o_data_bus[5]" PULL_MODE=UP DRIVE=8;
+IO_LOC "o_data_bus[4]" 25;
+IO_PORT "o_data_bus[4]" PULL_MODE=UP DRIVE=8;
+IO_LOC "o_data_bus[3]" 39;
+IO_PORT "o_data_bus[3]" PULL_MODE=UP DRIVE=8;
+IO_LOC "o_data_bus[2]" 36;
+IO_PORT "o_data_bus[2]" PULL_MODE=UP DRIVE=8;
+IO_LOC "o_data_bus[1]" 37;
+IO_PORT "o_data_bus[1]" PULL_MODE=UP DRIVE=8;
+IO_LOC "o_data_bus[0]" 38;
+IO_PORT "o_data_bus[0]" PULL_MODE=UP DRIVE=8;
+IO_LOC "o_led3" 13;
+IO_PORT "o_led3" PULL_MODE=UP DRIVE=8;
 IO_LOC "o_led2" 11;
 IO_PORT "o_led2" PULL_MODE=UP DRIVE=8;
 IO_LOC "o_sysclk" 10;
 IO_PORT "o_sysclk" PULL_MODE=UP DRIVE=8;
-IO_LOC "o_data_bus[0]" 38;
-IO_PORT "o_data_bus[0]" PULL_MODE=UP DRIVE=8;
-IO_LOC "o_data_bus[1]" 37;
-IO_PORT "o_data_bus[1]" PULL_MODE=UP DRIVE=8;
-IO_LOC "o_data_bus[2]" 36;
-IO_PORT "o_data_bus[2]" PULL_MODE=UP DRIVE=8;
-IO_LOC "o_data_bus[3]" 39;
-IO_PORT "o_data_bus[3]" PULL_MODE=UP DRIVE=8;
-IO_LOC "o_data_bus[4]" 25;
-IO_PORT "o_data_bus[4]" PULL_MODE=UP DRIVE=8;
-IO_LOC "o_data_bus[5]" 26;
-IO_PORT "o_data_bus[5]" PULL_MODE=UP DRIVE=8;
-IO_LOC "o_data_bus[6]" 27;
-IO_PORT "o_data_bus[6]" PULL_MODE=UP DRIVE=8;
-IO_LOC "o_data_bus[7]" 28;
-IO_PORT "o_data_bus[7]" PULL_MODE=UP DRIVE=8;
 IO_LOC "i_reset" 4;
 IO_PORT "i_reset" PULL_MODE=UP;
 IO_LOC "i_clock" 52;

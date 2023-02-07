@@ -234,7 +234,7 @@ BEGIN
             elsif w_INS_opcode = "1000" AND microinstruction_counter = "010" AND r_zero_flag = '1' then --jump if zero
                 w_load_pc_2 <= '1';
             else
-                temp <= '0';
+                w_load_pc_2 <= '0';
             end if;
 
         END IF;

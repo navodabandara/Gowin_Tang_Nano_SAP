@@ -17,19 +17,19 @@ END top_level;
 
 ARCHITECTURE behavioral OF top_level IS
     --stuff related to clock driving
-    CONSTANT c_clock_multiplier : NATURAL := 1000000; --clock frequency --27000000 max
+    CONSTANT c_clock_multiplier : NATURAL := 100000; --clock frequency --27000000 max
     SIGNAL r_clock_counter : NATURAL RANGE 0 TO c_clock_multiplier; --max range is clock cycles per second
     SIGNAL w_sysclk : STD_LOGIC := '0'; --system clock that the SAP 1 operates at
 
     SIGNAL r_data_bus : STD_LOGIC_VECTOR(7 DOWNTO 0) := "LLLLLLLL"; --data bus --Note: should be pulled down to gnd hence weak low
 
     SIGNAL r_debug : NATURAL RANGE 0 TO 31 := 0; --for testing
-    SIGNAL w_halt : STD_LOGIC := '0';
+    SIGNAL w_halt, temp : STD_LOGIC := '0';
 
     --***********************************CONTROL BUS****************************************
     --declaring all the control bus lines and setting their default states
     --############PC##############
-    SIGNAL w_reset_pc, w_load_pc, w_enable_pc : STD_LOGIC := '0';
+    SIGNAL w_reset_pc, w_load_pc, w_load_pc_2, w_enable_pc : STD_LOGIC := '0';
     SIGNAL w_dump_pc : STD_LOGIC := '0';
 
     --############General Register A##############
@@ -49,7 +49,7 @@ ARCHITECTURE behavioral OF top_level IS
     --############Instruction Register##############
     SIGNAL w_read_INS, w_write_INS : STD_LOGIC := '0';
     SIGNAL w_INS_out_L : STD_LOGIC_VECTOR(3 DOWNTO 0);
-    SIGNAL w_INS_decoder_in : STD_LOGIC_VECTOR(3 DOWNTO 0);
+    SIGNAL w_INS_opcode : STD_LOGIC_VECTOR(3 DOWNTO 0);
     SIGNAL w_INS_output_direct_H : STD_LOGIC_VECTOR(3 DOWNTO 0); --UNUSED
 
     --###############Output Register################
@@ -90,8 +90,6 @@ BEGIN
             r_clock_counter <= 0; --reset both counters
         END IF;
     END PROCESS sysclk_div;
-
-    o_sysclk <= w_sysclk; -- show the sysclk on PIN10_IOL15A_LED1
     --***********************************SYSCLK******************************************
 
     --sysclk process which is the main clock for the SAP 1 architecture
@@ -112,6 +110,7 @@ BEGIN
         i_enable => w_enable_pc,
         i_dump => w_dump_pc,
         i_load => w_load_pc,
+        i_load_2 => w_load_pc_2, --For conditional jump
         i_data_in => r_data_bus,
         o_counter_output => r_data_bus
         );
@@ -152,7 +151,7 @@ BEGIN
         o_output(3 DOWNTO 0) => r_data_bus(3 DOWNTO 0),
         o_output(7 DOWNTO 4) => w_INS_output_direct_H, --UNSUSED
         o_output_direct(3 DOWNTO 0) => w_INS_out_L, --UNUSED
-        o_output_direct(7 DOWNTO 4) => w_INS_decoder_in
+        o_output_direct(7 DOWNTO 4) => w_INS_opcode
         );
 
     REG_OUT : ENTITY work.register_8bit PORT MAP (
@@ -208,7 +207,7 @@ BEGIN
         ce => '1',
         reset => '0',
         wre => '0',
-        ad(6 DOWNTO 3) => w_INS_decoder_in,
+        ad(6 DOWNTO 3) => w_INS_opcode,
         ad(2 DOWNTO 0) => microinstruction_counter,
         din => "XXXXXXXXXXXXXXXX"
         );
@@ -225,8 +224,26 @@ BEGIN
         o_output_direct(0) => r_carry_flag
         );
     
+--******************************CONDITIONAL JUMP HANDLER***********************************
+    conditional_jump_handler : PROCESS (w_sysclk, r_zero_flag, r_carry_flag, w_INS_opcode, microinstruction_counter) IS
+    BEGIN
+        IF falling_edge (w_sysclk) THEN --on the falling edge of clock
+            --jump if carry
+            if w_INS_opcode = "0111" AND microinstruction_counter = "010" AND r_carry_flag = '1' then
+                w_load_pc_2 <= '1';            
+            elsif w_INS_opcode = "1000" AND microinstruction_counter = "010" AND r_zero_flag = '1' then --jump if zero
+                w_load_pc_2 <= '1';
+            else
+                temp <= '0';
+            end if;
+
+        END IF;
+    END PROCESS conditional_jump_handler; 
+
+    o_data_bus <= w_ROUT; -- output the data bus to the 7 segment arduino uno driver
     o_led3 <= not r_zero_flag;
     o_led2 <= not r_carry_flag;
-    o_data_bus <= w_ROUT; -- output the data bus 
+    
+    o_sysclk <= w_sysclk; -- show the sysclk on PIN10_IOL15A_LED1
 
 END behavioral;

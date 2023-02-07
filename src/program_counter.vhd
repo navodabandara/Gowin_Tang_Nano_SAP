@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity program_counter is
     port(
-        i_clock, i_reset, i_enable, i_dump, i_load : in std_logic;
+        i_clock, i_reset, i_enable, i_dump, i_load, i_load_2 : in std_logic;
         i_data_in : in std_logic_vector (7 downto 0);
         o_counter_output : out std_logic_vector(7 downto 0)
     );
@@ -31,7 +31,7 @@ begin
                     r_counter <= "00000000";
                 end if;
 
-                if i_load = '1' then
+                if ( i_load = '1' OR i_load_2 = '1') then
                     r_counter <= i_data_in;
                 end if;
             end if;

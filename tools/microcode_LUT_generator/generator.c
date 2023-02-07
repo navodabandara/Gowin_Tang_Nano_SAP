@@ -15,13 +15,6 @@ To generate mi file : generator.exe > microcode_LUT.mi
 #define DATA_TYPE uint16_t
 #define DATA_WIDTH 16
 
-#define SHIFT_DATA 2
-#define SHIFT_CLK 3
-#define SHIFT_LATCH 4
-#define EEPROM_D0 5
-#define EEPROM_D7 12
-#define WRITE_EN 13
-
 #define HLT 0b1000000000000000  // Halt clock
 #define MI  0b0100000000000000  // Memory address register in
 #define RI  0b0010000000000000  // RAM data in
@@ -37,7 +30,11 @@ To generate mi file : generator.exe > microcode_LUT.mi
 #define CE  0b0000000000001000  // Program counter enable
 #define CO  0b0000000000000100  // Program counter out
 #define J   0b0000000000000010  // Jump (program counter in)
-#define FI  0b0000000000000010 // Flag Register in
+#define FI  0b0000000000000001 // Flag Register in
+
+
+//contrary to Ben's Arduino code, I've made a conditional jump handler
+//in hardware 
 
 DATA_TYPE data[] = {
   MI|CO,  RO|II|CE,  0,      0,      0,           0, 0, 0,   // 0000 - NOP
@@ -47,8 +44,8 @@ DATA_TYPE data[] = {
   MI|CO,  RO|II|CE,  IO|MI,  AO|RI,  0,           0, 0, 0,   // 0100 - STA
   MI|CO,  RO|II|CE,  IO|AI,  0,      0,           0, 0, 0,   // 0101 - LDI
   MI|CO,  RO|II|CE,  IO|J,   0,      0,           0, 0, 0,   // 0110 - JMP
-  MI|CO,  RO|II|CE,  0,      0,      0,           0, 0, 0,   // 0111
-  MI|CO,  RO|II|CE,  0,      0,      0,           0, 0, 0,   // 1000
+  MI|CO,  RO|II|CE,  IO,     0,      0,           0, 0, 0,   // 0111 - JC
+  MI|CO,  RO|II|CE,  IO,     0,      0,           0, 0, 0,   // 1000 - JZ
   MI|CO,  RO|II|CE,  0,      0,      0,           0, 0, 0,   // 1001
   MI|CO,  RO|II|CE,  0,      0,      0,           0, 0, 0,   // 1010
   MI|CO,  RO|II|CE,  0,      0,      0,           0, 0, 0,   // 1011

@@ -1,15 +1,16 @@
-VAR 12 1
-VAR 14 3
-VAR 15 5
+VAR y 5
+VAR x 3
+VAR product 1
+VAR one 1
 
-LDA 14
-SUB 12
+LDA x
+SUB one
 JC 6
-LDA 13
+LDA product
 OUT
 HLT
-STA 14
-LDA 13
-ADD 15
-STA 13
+STA x
+LDA product
+ADD y
+STA product
 JMP 0

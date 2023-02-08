@@ -1,16 +1,23 @@
 VAR y 5
 VAR x 3
-VAR product 1
+VAR product 0
 VAR one 1
+
+
+top:
 
 LDA x
 SUB one
-JC 6
+JC continue
 LDA product
 OUT
+
+
 HLT
+continue:
+
 STA x
 LDA product
 ADD y
 STA product
-JMP 0
+JMP top

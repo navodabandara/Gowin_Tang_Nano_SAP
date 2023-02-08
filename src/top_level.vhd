@@ -1,6 +1,13 @@
 --TODO find a way to remove unused ports
 --TODO implement reset (perhaps add a rising edge clock independant reset to submodules)
 --TODO rename outputs and inputs called TOBUS, FROMBUS to clearly distinguish between direct outputs/inputs
+
+--TODO POSSIBLE IMPROVEMENTS
+--Expand memory which is currently 16 bytes
+--reset microcode counter if there are no more microinstructions
+--optimize command bus (perhaps by combining instructions, see which instructions are never together
+--and bunch them?)
+
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
@@ -17,14 +24,14 @@ END top_level;
 
 ARCHITECTURE behavioral OF top_level IS
     --stuff related to clock driving
-    CONSTANT c_clock_multiplier : NATURAL := 100000; --clock frequency --27000000 max
+    CONSTANT c_clock_multiplier : NATURAL := 10000; --clock frequency --27000000 max
     SIGNAL r_clock_counter : NATURAL RANGE 0 TO c_clock_multiplier; --max range is clock cycles per second
     SIGNAL w_sysclk : STD_LOGIC := '0'; --system clock that the SAP 1 operates at
 
     SIGNAL r_data_bus : STD_LOGIC_VECTOR(7 DOWNTO 0) := "LLLLLLLL"; --data bus --Note: should be pulled down to gnd hence weak low
 
     SIGNAL r_debug : NATURAL RANGE 0 TO 31 := 0; --for testing
-    SIGNAL w_halt, temp : STD_LOGIC := '0';
+    SIGNAL w_halt : STD_LOGIC := '0';
 
     --***********************************CONTROL BUS****************************************
     --declaring all the control bus lines and setting their default states

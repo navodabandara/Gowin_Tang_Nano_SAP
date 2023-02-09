@@ -1,22 +1,24 @@
 VAR x 0
 VAR y 1
-VAR z 0
+VAR z 1
 
 reset:
 
-LDI 1
-STA y
 LDI 0
+STA x
+OUT
+LDI 1
 
 loop:
 
+STA y
 OUT
-ADD y
+
+
+ADD x
+JC reset
 STA z
 LDA y
 STA x
 LDA z
-STA y
-LDA x
-JC reset
 JMP loop

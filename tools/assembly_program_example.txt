@@ -1,23 +1,22 @@
-VAR y 5
-VAR x 3
-VAR product 0
-VAR one 1
+VAR x 0
+VAR y 1
+VAR z 0
 
+reset:
 
-top:
+LDI 1
+STA y
+LDI 0
 
-LDA x
-SUB one
-JC continue
-LDA product
+loop:
+
 OUT
-
-
-HLT
-continue:
-
-STA x
-LDA product
 ADD y
-STA product
-JMP top
+STA z
+LDA y
+STA x
+LDA z
+STA y
+LDA x
+JC reset
+JMP loop

@@ -24,7 +24,7 @@ END top_level;
 
 ARCHITECTURE behavioral OF top_level IS
     --stuff related to clock driving
-    CONSTANT c_clock_multiplier : NATURAL := 100000; --clock frequency --27000000 max
+    CONSTANT c_clock_multiplier : NATURAL := 1000000; --clock frequency --27000000 max
     SIGNAL r_clock_counter : NATURAL RANGE 0 TO c_clock_multiplier; --max range is clock cycles per second
     SIGNAL w_sysclk : STD_LOGIC := '0'; --system clock that the SAP 1 operates at
 

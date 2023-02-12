@@ -1,43 +1,44 @@
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
 
-entity program_counter is
-    port(
-        i_clock, i_reset, i_enable, i_dump, i_load, i_load_2 : in std_logic;
-        i_data_in : in std_logic_vector (7 downto 0);
-        o_counter_output : out std_logic_vector(7 downto 0)
+ENTITY program_counter IS
+    PORT (
+        i_clock, i_reset, i_enable, i_dump, i_load, i_load_2 : IN STD_LOGIC;
+        i_data_in : IN STD_LOGIC_VECTOR (7 DOWNTO 0);
+        o_counter_output : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
-end program_counter;
+END program_counter;
 
-architecture program_counter_rtl of program_counter is
-    signal r_counter : std_logic_vector(7 downto 0) := "00000000";
+ARCHITECTURE program_counter_rtl OF program_counter IS
+    SIGNAL r_counter : STD_LOGIC_VECTOR(7 DOWNTO 0) := "00000000";
 
-begin
+BEGIN
 
-    p_increment : process (i_clock) is
-    begin
-            if rising_edge (i_clock) then
-				
-                if i_enable = '1' then
-							if r_counter = "00001111" then
-								r_counter <= "00000000";
-							else
-								r_counter <= std_logic_vector(unsigned(r_counter) + 1);
-							end if;
-                end if;
+    p_increment : PROCESS (i_clock) IS
+    BEGIN
+        IF rising_edge (i_clock) THEN
 
-                if i_reset = '1' then
+            IF i_enable = '1' THEN
+                IF r_counter = "00001111" THEN
                     r_counter <= "00000000";
-                end if;
+                ELSE
+                    r_counter <= STD_LOGIC_VECTOR(unsigned(r_counter) + 1);
+                END IF;
+            END IF;
 
-                if ( i_load = '1' OR i_load_2 = '1') then
-                    r_counter <= i_data_in;
-                end if;
-            end if;
+            IF i_reset = '1' THEN
+                r_counter <= "00000000";
+            END IF;
 
-    end process p_increment;
+            IF (i_load = '1' OR i_load_2 = '1') THEN
+                r_counter <= i_data_in;
+            END IF;
+        END IF;
 
-    o_counter_output <= r_counter when (i_dump = '1') else "ZZZZZZZZ";
+    END PROCESS p_increment;
 
-end program_counter_rtl;
+    o_counter_output <= r_counter WHEN (i_dump = '1') ELSE
+        "ZZZZZZZZ";
+
+END program_counter_rtl;

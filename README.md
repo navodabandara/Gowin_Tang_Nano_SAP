@@ -12,9 +12,9 @@ To get started with this project, you will need the following (or adapt the sour
 
 - Gowin Tang Nano 9K FPGA board
 - Gowin FPGA Designer (Built with version 1.9.8.03 Education Build)
-- Arduino UNO
+- Arduino UNO (Optional)
 - TM1637 
-- Arduino IDE
+- Arduino IDE (Optional)
 - Python 3
 - Following Ben Eater's video series would make things easier
 
@@ -26,7 +26,7 @@ Follow the instructions as described here : [Install IDE - Sipeed Wiki](https://
  git clone https://github.com/navodabandara/Gowin_Tang_Nano_SAP_1
 ```
 
-Navigate to the Process tab and right click Systhesis, click Configuration > Syntheize > General > Systhesis Language and set to VHDL 2008. Back in the main window, click run all to synthesize, place and route. 
+Navigate to the Process tab and right click Synthesis, click Configuration > Synthesize > General > Synthesis Language and set to VHDL 2008. Back in the main window, click run all to synthesize, place and route. 
 
 Connect device to USB, open the Program Device  application and set access mode to either SRAM mode or Embedded flash mode. The former is faster than the latter with regards to bitstream write speed, although the program is lost after the power is disconnected.
 
@@ -36,7 +36,7 @@ Select the Program/Configure to write bitstream to device.
 
 Features:
 
-- Upto 27MHz clock cycle frequency
+- Up to 27MHz clock cycle frequency
 
 - 16 Bytes of RAM (Yes, you read that right)
 
@@ -48,9 +48,18 @@ Features:
 
 - Output bus
 
-![block_diagram_high_level.drawio.png](https://raw.githubusercontent.com/navodabandara/Gowin_Tang_Nano_SAP_1/main/assets/block_diagram_high_level.drawio.png)
+![block_diagram_high_level.drawio.png](https://raw.githubusercontent.com/navodabandara/Gowin_Tang_Nano_SAP_1/main/assets/block_diagram_high_level.drawio.png) 
 
-# 
+## <u>TM1637</u>
+
+TM1637 display is a convenient way to display information in a compact and easily readable decimal format using the OUT instruction and the only means of visualizing the operation of the SAP computer apart from blinking LEDS.  This project includes a [TM1637 driver](https://github.com/navodabandara/Tang_Nano_9k_TM1637) written in VHDL to directly drive the display by the FPGA.
+
+| TM1637 | Tang Nano         |
+| ------ | ----------------- |
+| VCC    | 5V                |
+| GND    | GND               |
+| Data   | tm1637_data (38)  |
+| Clock  | tm1637_clock (27) |
 
 ## <u>Programming</u>
 
@@ -59,18 +68,18 @@ Features:
 | NOP      | -            | No operation                                                                                                                                      | 8      |
 | LDA      | Variable     | Load variable to register A                                                                                                                       | 8      |
 | ADD      | Variable     | Add contents in register A<br/>and register B                                                                                                     | 8      |
-| SUB      | Variable     | Substract the contents in register A<br/>and register B                                                                                           | 8      |
+| SUB      | Variable     | Subtract the contents in register A<br/>and register B                                                                                            | 8      |
 | STA      | Variable     | Stores contents in register A to variable                                                                                                         | 8      |
-| LDI      | Value        | Loads value (4 bit unisgned integer: 0 to 15) to register A                                                                                       | 8      |
+| LDI      | Value        | Loads value (4 bit unsigned integer: 0 to 15) to register A                                                                                       | 8      |
 | JMP      | Label        | Jump to memory location specified by Label                                                                                                        | 8      |
 | JC       | Label        | Jump to memory location specified by Label if the previous ADD or SUB instruction resulted in a carry flag set (Overflow condition)               | 8      |
 | JZ       | Label        | Jump to memory location specified by Label if the previous ADD or SUB instruction resulted in a zero flag set (Result of the ADD or SUB was zero) | 8      |
 | OUT      | -            | Copies the value in the register A to the Output register. Displays on the 7 segment display if connected.                                        | 8      |
 | HLT      | -            | Halts the computer.                                                                                                                               | -      |
 
-The syntax for an instruction is:  "mnemonic<space> operand <newline>". Variables may be declared as "VAR<space>variableName<space>value<newline>" , where value is 8 bit unsigned (0 to 255). Labels are defined as "labelName:<newline>."
+The syntax for an instruction is:  *"mnemonic operand"*. Variables may be declared as *"VAR variableName value"* , where value is 8 bit unsigned (0 to 255). Labels are defined as *"labelName:"*
 
-Example assembly file for an 8bit fibonacci sequence generator.
+Example assembly file for an 8bit Fibonacci sequence generator.
 
 ```asmatmel
 VAR x 0 ;declare variables

@@ -4,6 +4,7 @@ use IEEE.NUMERIC_STD.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
+--Based on the work of https://github.com/mongoq/tm1637-fpga
 entity tm1637_standalone is
 
 	 Generic (divider  : integer := 4000); -- the divider must be set so that the result is a frequency of 20 kHz
@@ -17,7 +18,6 @@ entity tm1637_standalone is
 end tm1637_standalone;
 
 architecture Behavioral of tm1637_standalone is
-
 ------------------------------------------------------------------------------------------------------------------------------------
 
 signal clkdiv : integer range 0 to divider-1 := 0;
@@ -47,7 +47,6 @@ begin
    end if;
   end if;
  end process;
-
 
   process(all)
   begin

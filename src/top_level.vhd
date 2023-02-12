@@ -23,14 +23,11 @@ END top_level;
 
 ARCHITECTURE behavioral OF top_level IS
     --stuff related to clock driving
-    CONSTANT c_clock_multiplier : NATURAL := 100000; --clock frequency --27000000 max
+    CONSTANT c_clock_multiplier : NATURAL := 100000; --clock frequency --27000000 cycles per second
     SIGNAL r_clock_counter : NATURAL RANGE 0 TO c_clock_multiplier; --max range is clock cycles per second
     SIGNAL w_sysclk : STD_LOGIC := '0'; --system clock that the SAP 1 operates at
-
     SIGNAL r_data_bus : STD_LOGIC_VECTOR(7 DOWNTO 0) := "LLLLLLLL"; --data bus --Note: should be pulled down to gnd hence weak low
-
-    SIGNAL r_debug : NATURAL RANGE 0 TO 31 := 0; --for testing
-    SIGNAL w_halt : STD_LOGIC := '0';
+    SIGNAL w_halt : STD_LOGIC := '0';--cpu halt signal
 
     --***********************************CONTROL BUS****************************************
     --declaring all the control bus lines and setting their default states
@@ -47,7 +44,7 @@ ARCHITECTURE behavioral OF top_level IS
     SIGNAL w_output_direct_B : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
     --############Memory Address Register##############
-    SIGNAL w_read_MA, w_write_MA : STD_LOGIC := '0'; --write     is unused
+    SIGNAL w_read_MA, w_write_MA : STD_LOGIC := '0'; --write is unused
     SIGNAL w_MA_out_tristate : STD_LOGIC_VECTOR(7 DOWNTO 0);
     SIGNAL w_MA_out : STD_LOGIC_VECTOR(3 DOWNTO 0);
     SIGNAL w_MA_out_H : STD_LOGIC_VECTOR(3 DOWNTO 0);
@@ -79,38 +76,14 @@ ARCHITECTURE behavioral OF top_level IS
     SIGNAL r_carry_flag, r_zero_flag : STD_LOGIC;
 
 BEGIN
-    --*********************************SYSCLK DIVIDER***************************************
-
-    sysclk_div : PROCESS (i_clock, i_reset) IS
-    BEGIN
-        IF rising_edge (i_clock) THEN --on the rising edge of clock
-            IF r_clock_counter = c_clock_multiplier - 1 THEN --if the clock is about to overflow
-                r_clock_counter <= 0; --set the clock counter back to 0
-                w_sysclk <=(NOT w_sysclk) when (w_halt='0') else '0'; --toggle sysclk every c_clock_multiplier clock cycles
-            ELSE
-                r_clock_counter <= r_clock_counter + 1; --else increment the clock counter by 1
-            END IF;
-        END IF;
-
-        IF i_reset = '0' THEN --if the reset button is 0
-            r_clock_counter <= 0; --reset both counters
-        END IF;
-    END PROCESS sysclk_div;
-    --***********************************SYSCLK******************************************
-
-    --sysclk process which is the main clock for the SAP 1 architecture
-    sysclk : PROCESS (w_sysclk) IS
-    BEGIN
-        IF falling_edge (w_sysclk) THEN --on the falling edge of clock
-            --do stuff
-            microinstruction_counter <= microinstruction_counter + 1;
-
-        END IF;
-    END PROCESS sysclk;
+ --*************************************ASSIGNMENTS***************************************
+    o_led3 <= not r_zero_flag;  -- show the sysclk on PIN13_IOL15A_LED1
+    o_led2 <= not r_carry_flag;  -- show the sysclk on PIN11_IOL15A_LED1
+    o_sysclk <= w_sysclk; -- show the sysclk on PIN10_IOL15A_LED1
 
     --******************************ENTITY DECLARATIONS***********************************
-    --~~~~~~~~~~~~~~~~~~~~PC~~~~~~~~~~~~~~~~~~~~
-    PC : ENTITY work.program_counter PORT MAP(
+ 
+    PC : ENTITY work.program_counter PORT MAP( --Program Counter
         i_clock => w_sysclk,
         i_reset => w_reset_pc, --needs to be changed to pcs own reset
         i_enable => w_enable_pc,
@@ -121,7 +94,7 @@ BEGIN
         o_counter_output => r_data_bus
         );
 
-    REG_A : ENTITY work.register_8bit PORT MAP (
+    REG_A : ENTITY work.register_8bit PORT MAP ( --General Purpose Register A
         i_clk => w_sysclk,
         i_input => r_data_bus,
         i_read => w_read_A,
@@ -130,7 +103,7 @@ BEGIN
         o_output_direct => w_output_direct_A
         );
 
-    REG_B : ENTITY work.register_8bit PORT MAP (
+    REG_B : ENTITY work.register_8bit PORT MAP ( --Register B
         i_clk => w_sysclk,
         i_input => r_data_bus,
         i_read => w_read_B,
@@ -139,7 +112,7 @@ BEGIN
         o_output_direct => w_output_direct_B
         );
 
-    REG_MA : ENTITY work.register_8bit PORT MAP (
+    REG_MA : ENTITY work.register_8bit PORT MAP ( --Memory Address Register
         i_clk => w_sysclk,
         i_input => r_data_bus,
         i_read => w_read_MA,
@@ -149,7 +122,7 @@ BEGIN
         o_output_direct(7 DOWNTO 4) => w_MA_out_H
         );
 
-    REG_INS : ENTITY work.register_8bit PORT MAP (
+    REG_INS : ENTITY work.register_8bit PORT MAP ( --Instruction Register
         i_clk => w_sysclk,
         i_input => r_data_bus,
         i_read => w_read_INS,
@@ -160,7 +133,7 @@ BEGIN
         o_output_direct(7 DOWNTO 4) => w_INS_opcode
         );
 
-    REG_OUT : ENTITY work.register_8bit PORT MAP (
+    REG_OUT : ENTITY work.register_8bit PORT MAP ( --Output Register
         i_clk => w_sysclk,
         i_input => r_data_bus,
         i_read => w_read_ROUT,
@@ -169,7 +142,7 @@ BEGIN
         o_output_direct => w_ROUT
         );
 
-    SP_RAM : ENTITY work.single_port_RAM PORT MAP (
+    SP_RAM : ENTITY work.single_port_RAM PORT MAP ( --RAM
         o_data_out => r_data_bus,
         i_data_in => r_data_bus,
         i_clk => w_sysclk,
@@ -178,7 +151,7 @@ BEGIN
         i_dump => w_ram_dump
         );
 
-    ADD_SUB_REG_A_B : ENTITY work.adder_substractor_8bit PORT MAP (
+    ADD_SUB_REG_A_B : ENTITY work.adder_substractor_8bit PORT MAP ( --ALU (Addition and substraction)
         i_reg_a => w_output_direct_A,
         i_reg_b => w_output_direct_B,
         i_out => w_out_reg_A_B,
@@ -186,10 +159,9 @@ BEGIN
         o_result => r_data_bus,
         o_carry => w_carry_A_B,
         o_zero_flag => w_zero_A_B
-        
         );
 
-    MICROCODE_LUT : ENTITY work.microcode_lut PORT MAP (
+    MICROCODE_LUT : ENTITY work.microcode_lut PORT MAP ( --Microinstruction decoder
         --~~~~~~~~~~ATTACHING CONTROL BUS TO MICROCODE_LUT~~~~~~~~~~~~~~
         dout(15) => w_halt,
         dout(14) => w_read_MA,
@@ -218,7 +190,7 @@ BEGIN
         din => "XXXXXXXXXXXXXXXX"
         );
 
-    REG_FLAGS : ENTITY work.register_8bit PORT MAP (
+    REG_FLAGS : ENTITY work.register_8bit PORT MAP ( --Flags register
         i_clk => w_sysclk,
         i_input(7 downto 2) => "XXXXXX",
         i_input(1) => w_zero_A_B,
@@ -230,7 +202,7 @@ BEGIN
         o_output_direct(0) => r_carry_flag
         );
 
-    TM1637 : ENTITY work.tm1637_standalone PORT MAP(
+    TM1637 : ENTITY work.tm1637_standalone PORT MAP( --TM1637 Display driver (Not related to SAP)
         clk25 =>  i_clock,
         data =>  w_ROUT,
         scl  =>  tm1637_clk,
@@ -238,6 +210,31 @@ BEGIN
         signedEnable => '0'
     );
     
+    --*********************************SYSCLK DIVIDER***************************************
+    sysclk_div : PROCESS (i_clock, i_reset) IS
+    BEGIN
+        IF rising_edge (i_clock) THEN --on the rising edge of clock
+            IF r_clock_counter = c_clock_multiplier - 1 THEN --if the clock is about to overflow
+                r_clock_counter <= 0; --set the clock counter back to 0
+                w_sysclk <=(NOT w_sysclk) when (w_halt='0') else '0'; --toggle sysclk every c_clock_multiplier clock cycles
+            ELSE
+                r_clock_counter <= r_clock_counter + 1; --else increment the clock counter by 1
+            END IF;
+        END IF;
+        IF i_reset = '0' THEN --if the reset button is 0
+            r_clock_counter <= 0; --reset both counters
+        END IF;
+    END PROCESS sysclk_div;
+
+    --***********************************SYSCLK******************************************
+    --sysclk process which is the main clock for the SAP 1 architecture
+    sysclk : PROCESS (w_sysclk) IS
+    BEGIN
+        IF falling_edge (w_sysclk) THEN --on the falling edge of clock
+            microinstruction_counter <= microinstruction_counter + 1;
+        END IF;
+    END PROCESS sysclk;
+
 --******************************CONDITIONAL JUMP HANDLER***********************************
     conditional_jump_handler : PROCESS (w_sysclk, r_zero_flag, r_carry_flag, w_INS_opcode, microinstruction_counter) IS
     BEGIN
@@ -253,10 +250,5 @@ BEGIN
 
         END IF;
     END PROCESS conditional_jump_handler; 
-
-    o_led3 <= not r_zero_flag;
-    o_led2 <= not r_carry_flag;
-    
-    o_sysclk <= w_sysclk; -- show the sysclk on PIN10_IOL15A_LED1
 
 END behavioral;

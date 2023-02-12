@@ -15,10 +15,8 @@ begin
   cout <= (a and b) or (cin and (a xor b));
 end behavioral;
 
-
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+library ieee;
+USE ieee.std_logic_1164.ALL;
 
 entity eight_bit_adder is
     Port ( a : in  STD_LOGIC_VECTOR (7 downto 0);
@@ -27,6 +25,9 @@ entity eight_bit_adder is
            sum : out  STD_LOGIC_VECTOR (7 downto 0);
            cout : out  STD_LOGIC);
 end eight_bit_adder;
+
+library ieee;
+USE ieee.std_logic_1164.ALL;
 
 architecture behavioral of eight_bit_adder is
 component full_adder is
@@ -66,8 +67,6 @@ begin
 
   sum <= temp_sum;
 end behavioral;
-
-
 
 library ieee;
 USE ieee.std_logic_1164.ALL;

@@ -1,6 +1,6 @@
 # Ben Eater's SAP Computer with VHDL on Gowin Tang Nano 9K
 
-This project aims to build [Ben Eater's Simple As Possible (SAP) computer](https://www.youtube.com/watch?v=HyznrdDSSGM&list=PLowKtXNTBypGqImE405J2565dvjafglHU) using language and run it on a [Gowin Tang Nano 9K FPGA developer board](https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-9K/Nano-9K.html). The SAP computer is a simple 8-bit computer designed to demonstrate the basic principles of computer architecture and operation based on a design described in the book *Digital Computer Electronics* by Albert Paul Malvino and Jerald A. Brown.
+This project aims to build [Ben Eater's Simple As Possible (SAP) computer](https://www.youtube.com/watch?v=HyznrdDSSGM&list=PLowKtXNTBypGqImE405J2565dvjafglHU) using VHDL and run it on a [Gowin Tang Nano 9K FPGA developer board](https://wiki.sipeed.com/hardware/en/tang/Tang-Nano-9K/Nano-9K.html). The SAP computer is a simple 8-bit computer designed to demonstrate the basic principles of computer architecture and operation based on a design described in the book *Digital Computer Electronics* by Albert Paul Malvino and Jerald A. Brown.
 
 The project includes the implementation of the SAP computer in VHDL, including the design of the ALU, Memory and registers. The implementation will be tested on a the Gowin Tang Nano 9K FPGA board. Also included is a simple assembler written in Python with examples included.
 
@@ -46,7 +46,7 @@ Features:
 
 - Fixed 8 cycles per instruction
 
-- Output bus
+- Integrated TM1637 driver to display 8 bit decimal values
 
 ![block_diagram_high_level.drawio.png](https://raw.githubusercontent.com/navodabandara/Gowin_Tang_Nano_SAP_1/main/assets/block_diagram_high_level.drawio.png) 
 

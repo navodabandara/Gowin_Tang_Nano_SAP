@@ -17,14 +17,13 @@ USE ieee.std_logic_unsigned.ALL;
 ENTITY top_level IS
     PORT (
         i_clock, i_reset : IN STD_LOGIC;
-        o_sysclk, o_led2, o_led3 : OUT STD_LOGIC;
-        o_data_bus : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+        o_sysclk, o_led2, o_led3, tm1637_data, tm1637_clk: OUT STD_LOGIC
     );
 END top_level;
 
 ARCHITECTURE behavioral OF top_level IS
     --stuff related to clock driving
-    CONSTANT c_clock_multiplier : NATURAL := 1000000; --clock frequency --27000000 max
+    CONSTANT c_clock_multiplier : NATURAL := 100000; --clock frequency --27000000 max
     SIGNAL r_clock_counter : NATURAL RANGE 0 TO c_clock_multiplier; --max range is clock cycles per second
     SIGNAL w_sysclk : STD_LOGIC := '0'; --system clock that the SAP 1 operates at
 
@@ -230,6 +229,14 @@ BEGIN
         o_output_direct(1) => r_zero_flag,
         o_output_direct(0) => r_carry_flag
         );
+
+    TM1637 : ENTITY work.tm1637_standalone PORT MAP(
+        clk25 =>  i_clock,
+        data =>  w_ROUT,
+        scl  =>  tm1637_clk,
+        sda  => tm1637_data,
+        signedEnable => '0'
+    );
     
 --******************************CONDITIONAL JUMP HANDLER***********************************
     conditional_jump_handler : PROCESS (w_sysclk, r_zero_flag, r_carry_flag, w_INS_opcode, microinstruction_counter) IS
@@ -247,7 +254,6 @@ BEGIN
         END IF;
     END PROCESS conditional_jump_handler; 
 
-    o_data_bus <= w_ROUT; -- output the data bus to the 7 segment arduino uno driver
     o_led3 <= not r_zero_flag;
     o_led2 <= not r_carry_flag;
     

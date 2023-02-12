@@ -47,10 +47,8 @@ Features:
 - Fixed 8 cycles per instruction
 
 - Output bus
-  
-  
 
-![block_diagram_high_level.drawio.png](C:\Users\navod\Desktop\Gowin_Tang_Nano_SAP_1\assets\block_diagram_high_level.drawio.png)
+![block_diagram_high_level.drawio.png](https://raw.githubusercontent.com/navodabandara/Gowin_Tang_Nano_SAP_1/main/assets/block_diagram_high_level.drawio.png)
 
 # 
 
@@ -71,8 +69,6 @@ Features:
 | HLT      | -            | Halts the computer.                                                                                                                               | -      |
 
 The syntax for an instruction is:  "mnemonic<space> operand <newline>". Variables may be declared as "VAR<space>variableName<space>value<newline>" , where value is 8 bit unsigned (0 to 255). Labels are defined as "labelName:<newline>."
-
-
 
 Example assembly file for an 8bit fibonacci sequence generator.
 

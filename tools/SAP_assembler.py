@@ -168,7 +168,7 @@ def assemble(program):
 #___________________________MAIN_______________________________
 def main():
     if len(sys.argv) != 2:
-        print("Error: Incorrect number of arguments. Usage: python assembler.py inputFile.txt")
+        print("Error: Incorrect number of arguments. Usage: python SAP_assembler.py inputFile.txt")
         sys.exit(1)
     filename = sys.argv[1]
     try:
